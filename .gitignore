@@ -1,0 +1,25 @@
+# Ignore everything by default
+*
+
+# Keep git control files
+!.gitignore
+!README.md
+
+# Keep build files
+!_build/
+!_build/**
+
+# Keep addon files only
+!assets/
+assets/*
+!assets/components/
+assets/components/*
+!assets/components/msgiftcards/
+!assets/components/msgiftcards/**
+
+!core/
+core/*
+!core/components/
+core/components/*
+!core/components/msgiftcards/
+!core/components/msgiftcards/**

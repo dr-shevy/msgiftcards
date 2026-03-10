@@ -1,0 +1,3 @@
+msGiftCards 1.0.0-pl
+
+- First release
