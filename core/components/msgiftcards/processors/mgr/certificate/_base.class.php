@@ -47,6 +47,16 @@ abstract class msGiftCardsMgrProcessor extends modProcessor
         $row['order_id'] = (int)$row['order_id'];
         $row['order_product_id'] = (int)$row['order_product_id'];
         $row['item_index'] = (int)$row['item_index'];
+        $row['view_url'] = '';
+
+        if ($row['order_id'] > 0) {
+            $token = $this->msGiftCards->generateCertificateToken($row['order_id']);
+            if ($token !== '') {
+                $row['view_url'] = $this->msGiftCards->getCertificateUrl($token, [
+                    'format' => 'pdf',
+                ]);
+            }
+        }
 
         return $row;
     }

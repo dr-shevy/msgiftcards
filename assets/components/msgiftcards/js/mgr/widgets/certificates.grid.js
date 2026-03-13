@@ -6,7 +6,7 @@ msGiftCards.grid.Certificates = function(config) {
     baseParams: {
       action: 'certificate/getlist'
     },
-    fields: ['id', 'code', 'nominal', 'balance', 'currency', 'active', 'order_id', 'order_product_id', 'item_index', 'createdon', 'updatedon', 'expireson'],
+    fields: ['id', 'code', 'nominal', 'balance', 'currency', 'active', 'order_id', 'order_product_id', 'item_index', 'createdon', 'updatedon', 'expireson', 'view_url'],
     paging: true,
     remoteSort: true,
     anchor: '100%',
@@ -76,7 +76,7 @@ msGiftCards.grid.Certificates = function(config) {
     }, {
       header: _('msgiftcards_mgr_actions'),
       dataIndex: 'id',
-      width: 120,
+      width: 150,
       sortable: false,
       menuDisabled: true,
       fixed: true,
@@ -85,9 +85,15 @@ msGiftCards.grid.Certificates = function(config) {
         var toggleAction = active ? 'disable' : 'enable';
         var toggleIcon = active ? 'icon-toggle-off action-red' : 'icon-toggle-on action-green';
         var toggleTitle = active ? _('msgiftcards_mgr_disable') : _('msgiftcards_mgr_enable');
+        var viewButton = '';
+
+        if (row.data.view_url) {
+          viewButton = '<li><button type="button" class="msgiftcards-btn msgiftcards-btn-default icon icon-eye js-msgiftcards-action" data-action="view" title="' + _('msgiftcards_mgr_view') + '" qtip="' + _('msgiftcards_mgr_view') + '"></button></li>';
+        }
 
         return '<ul class="msgiftcards-row-actions">'
           + '<li><button type="button" class="msgiftcards-btn msgiftcards-btn-default icon icon-edit js-msgiftcards-action" data-action="update" title="' + _('msgiftcards_mgr_update') + '" qtip="' + _('msgiftcards_mgr_update') + '"></button></li>'
+          + viewButton
           + '<li><button type="button" class="msgiftcards-btn msgiftcards-btn-default icon ' + toggleIcon + ' js-msgiftcards-action" data-action="' + toggleAction + '" title="' + toggleTitle + '" qtip="' + toggleTitle + '"></button></li>'
           + '<li><button type="button" class="msgiftcards-btn msgiftcards-btn-default icon icon-trash-o action-red js-msgiftcards-action" data-action="remove" title="' + _('msgiftcards_mgr_remove') + '" qtip="' + _('msgiftcards_mgr_remove') + '"></button></li>'
           + '</ul>';
@@ -142,6 +148,8 @@ Ext.extend(msGiftCards.grid.Certificates, MODx.grid.Grid, {
     var action = actionBtn.getAttribute('data-action') || '';
     if (action === 'update') {
       this.updateCertificate(record, e);
+    } else if (action === 'view') {
+      this.viewCertificate(record);
     } else if (action === 'disable') {
       this.disableCertificate(record);
     } else if (action === 'enable') {
@@ -204,6 +212,12 @@ Ext.extend(msGiftCards.grid.Certificates, MODx.grid.Grid, {
       text: _('msgiftcards_mgr_remove'),
       handler: this.removeCertificate
     }];
+    if (r.view_url) {
+      m.splice(1, 0, {
+        text: _('msgiftcards_mgr_view'),
+        handler: this.viewCertificate
+      });
+    }
     return m;
   },
 
@@ -249,6 +263,16 @@ Ext.extend(msGiftCards.grid.Certificates, MODx.grid.Grid, {
       this.updateWindow.setCertificateId(r.id);
     }
     this.updateWindow.show((e && e.target) ? e.target : null);
+  },
+
+  viewCertificate: function(recordOrBtn) {
+    var r = recordOrBtn && recordOrBtn.data ? recordOrBtn.data : this.menu.record;
+    if (!r || !r.view_url) {
+      MODx.msg.alert(_('error'), _('msgiftcards_mgr_view_unavailable'));
+      return;
+    }
+
+    window.open(r.view_url, '_blank');
   },
 
   removeCertificate: function(recordOrBtn) {

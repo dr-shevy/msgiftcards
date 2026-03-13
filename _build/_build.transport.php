@@ -193,6 +193,93 @@ $snippetOrderData->setProperties([
     ],
 ]);
 
+$snippetCertificateLink = $modx->newObject('modSnippet');
+$snippetCertificateLink->fromArray([
+    'id' => 4,
+    'name' => 'msGiftCardsCertificateLink',
+    'description' => 'Generates a protected link to the gift certificate PDF file.',
+    'snippet' => msGiftCardsBuildPrepareCode($sources['source_core'] . 'elements/snippets/snippet.msgiftcards_certificate_link.php'),
+], '', true, true);
+$snippetCertificateLink->setProperties([
+    'order_id' => [
+        'name' => 'order_id',
+        'desc' => 'msgiftcards_prop_certificate_link_order_id_desc',
+        'type' => 'textfield',
+        'options' => '',
+        'value' => '',
+        'lexicon' => 'msgiftcards:properties',
+    ],
+    'toPlaceholder' => [
+        'name' => 'toPlaceholder',
+        'desc' => 'msgiftcards_prop_certificate_link_to_placeholder_desc',
+        'type' => 'textfield',
+        'options' => '',
+        'value' => '',
+        'lexicon' => 'msgiftcards:properties',
+    ],
+    'format' => [
+        'name' => 'format',
+        'desc' => 'msgiftcards_prop_certificate_link_format_desc',
+        'type' => 'list',
+        'options' => [
+            ['text' => 'pdf', 'value' => 'pdf'],
+            ['text' => 'html', 'value' => 'html'],
+        ],
+        'value' => 'pdf',
+        'lexicon' => 'msgiftcards:properties',
+    ],
+    'tpl' => [
+        'name' => 'tpl',
+        'desc' => 'msgiftcards_prop_certificate_link_tpl_desc',
+        'type' => 'textfield',
+        'options' => '',
+        'value' => '',
+        'lexicon' => 'msgiftcards:properties',
+    ],
+]);
+
+$snippetCertificateHtml = $modx->newObject('modSnippet');
+$snippetCertificateHtml->fromArray([
+    'id' => 5,
+    'name' => 'msGiftCardsCertificateHtml',
+    'description' => 'Renders gift certificate HTML using a customizable chunk.',
+    'snippet' => msGiftCardsBuildPrepareCode($sources['source_core'] . 'elements/snippets/snippet.msgiftcards_certificate_html.php'),
+], '', true, true);
+$snippetCertificateHtml->setProperties([
+    'order_id' => [
+        'name' => 'order_id',
+        'desc' => 'msgiftcards_prop_certificate_html_order_id_desc',
+        'type' => 'textfield',
+        'options' => '',
+        'value' => '',
+        'lexicon' => 'msgiftcards:properties',
+    ],
+    'token' => [
+        'name' => 'token',
+        'desc' => 'msgiftcards_prop_certificate_html_token_desc',
+        'type' => 'textfield',
+        'options' => '',
+        'value' => '',
+        'lexicon' => 'msgiftcards:properties',
+    ],
+    'tpl' => [
+        'name' => 'tpl',
+        'desc' => 'msgiftcards_prop_certificate_html_tpl_desc',
+        'type' => 'textfield',
+        'options' => '',
+        'value' => 'msGiftCards.certificate',
+        'lexicon' => 'msgiftcards:properties',
+    ],
+    'toPlaceholder' => [
+        'name' => 'toPlaceholder',
+        'desc' => 'msgiftcards_prop_certificate_html_to_placeholder_desc',
+        'type' => 'textfield',
+        'options' => '',
+        'value' => '',
+        'lexicon' => 'msgiftcards:properties',
+    ],
+]);
+
 $chunkField = $modx->newObject('modChunk');
 $chunkField->fromArray([
     'id' => 1,
@@ -209,7 +296,25 @@ $chunkInfo->fromArray([
     'snippet' => file_get_contents($sources['source_core'] . 'elements/chunks/chunk.msgiftcards_info.tpl'),
 ], '', true, true);
 
-$elements = array($plugin, $snippet, $snippetInfo, $snippetOrderData, $chunkField, $chunkInfo);
+$chunkCertificate = $modx->newObject('modChunk');
+$chunkCertificate->fromArray([
+    'id' => 3,
+    'name' => 'msGiftCards.certificate',
+    'description' => 'HTML template for gift certificate PDF/preview page.',
+    'snippet' => file_get_contents($sources['source_core'] . 'elements/chunks/chunk.msgiftcards_certificate.tpl'),
+], '', true, true);
+
+$elements = array(
+    $plugin,
+    $snippet,
+    $snippetInfo,
+    $snippetOrderData,
+    $snippetCertificateLink,
+    $snippetCertificateHtml,
+    $chunkField,
+    $chunkInfo,
+    $chunkCertificate
+);
 $category->addMany($elements);
 
 $attr = [
@@ -260,6 +365,9 @@ $vehicle->resolve('php', [
 $vehicle->resolve('php', [
     'source' => $sources['resolvers'] . 'resolve.payment.php',
 ]);
+$vehicle->resolve('php', [
+    'source' => $sources['resolvers'] . 'resolve.secret.php',
+]);
 $builder->putVehicle($vehicle);
 
 $settings = [
@@ -307,6 +415,21 @@ $settings = [
         'value' => 0,
         'xtype' => 'numberfield',
         'area' => 'main',
+    ],
+    'msgiftcards_certificate_token_key' => [
+        'value' => '',
+        'xtype' => 'textfield',
+        'area' => 'security',
+    ],
+    'msgiftcards_certificate_pdf_paper' => [
+        'value' => 'A5',
+        'xtype' => 'textfield',
+        'area' => 'pdf',
+    ],
+    'msgiftcards_certificate_pdf_orientation' => [
+        'value' => 'landscape',
+        'xtype' => 'textfield',
+        'area' => 'pdf',
     ],
 ];
 

@@ -1,5 +1,7 @@
 <?php
 
+require_once dirname(__FILE__) . '/msgiftcardspdf.class.php';
+
 class msGiftCards
 {
     /** @var modX */
@@ -31,6 +33,9 @@ class msGiftCards
             'paidStatusId' => (int)$modx->getOption('msgiftcards_paid_status_id', null, 0),
             'cancelStatusId' => (int)$modx->getOption('msgiftcards_cancel_status_id', null, 0),
             'giftPaymentId' => (int)$modx->getOption('msgiftcards_gift_payment_id', null, 0),
+            'certificateTokenKey' => trim((string)$modx->getOption('msgiftcards_certificate_token_key', null, '')),
+            'certificatePdfPaper' => trim((string)$modx->getOption('msgiftcards_certificate_pdf_paper', null, 'A4')),
+            'certificatePdfOrientation' => trim((string)$modx->getOption('msgiftcards_certificate_pdf_orientation', null, 'portrait')),
             'sessionKey' => 'msgiftcards',
         ], $config);
 
@@ -112,6 +117,32 @@ class msGiftCards
         }
 
         return $this->modx->getService('pdoTools');
+    }
+
+    public function getCertificateUrl($token, array $params = [])
+    {
+        $query = array_merge([
+            'token' => (string)$token,
+        ], $params);
+
+        $url = $this->config['assetsUrl'] . 'certificate.php?' . http_build_query($query);
+        if (preg_match('#^https?://#i', $url)) {
+            return $url;
+        }
+
+        $siteUrl = rtrim((string)$this->modx->getOption('site_url', null, ''), '/');
+        return $siteUrl . '/' . ltrim($url, '/');
+    }
+
+    public function getCertificateTokenKey()
+    {
+        $key = trim((string)$this->config['certificateTokenKey']);
+        if ($key !== '') {
+            return $key;
+        }
+
+        $siteId = (string)$this->modx->getOption('site_id', null, '');
+        return hash('sha256', 'msgiftcards|' . MODX_CORE_PATH . '|' . $siteId);
     }
 
     public function runSnippet($name, array $properties = [])
@@ -208,6 +239,245 @@ class msGiftCards
         }
 
         return $row;
+    }
+
+    public function getIssuedCertificatesByOrderId($orderId)
+    {
+        $orderId = (int)$orderId;
+        if ($orderId <= 0) {
+            return [];
+        }
+
+        $sql = 'SELECT * FROM ' . $this->table('msgiftcards_certificates') . ' WHERE order_id = :order_id ORDER BY id ASC';
+        $stmt = $this->modx->prepare($sql);
+        if (!$stmt) {
+            return [];
+        }
+
+        $stmt->bindValue(':order_id', $orderId, PDO::PARAM_INT);
+        if (!$stmt->execute()) {
+            return [];
+        }
+
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return is_array($rows) ? $rows : [];
+    }
+
+    public function getPrimaryIssuedCertificateByOrderId($orderId)
+    {
+        $rows = $this->getIssuedCertificatesByOrderId($orderId);
+        if (empty($rows)) {
+            return null;
+        }
+
+        return $rows[0];
+    }
+
+    public function formatAmount($value)
+    {
+        $formatted = number_format((float)$value, 2, '.', '');
+        $formatted = rtrim($formatted, '0');
+        $formatted = rtrim($formatted, '.');
+
+        return $formatted === '' ? '0' : $formatted;
+    }
+
+    public function formatCertificateDate($value)
+    {
+        $value = trim((string)$value);
+        if ($value === '') {
+            return '';
+        }
+
+        $timestamp = strtotime($value);
+        if ($timestamp === false) {
+            return $value;
+        }
+
+        return date('d.m.Y H:i', $timestamp);
+    }
+
+    public function getCertificateDataByOrderId($orderId)
+    {
+        $certificate = $this->getPrimaryIssuedCertificateByOrderId($orderId);
+        if (!$certificate) {
+            return null;
+        }
+
+        $currency = trim((string)(isset($certificate['currency']) ? $certificate['currency'] : ''));
+        if ($currency === '') {
+            $currency = $this->config['defaultCurrency'];
+        }
+
+        return [
+            'id' => (int)$certificate['id'],
+            'order_id' => (int)$certificate['order_id'],
+            'code' => (string)$certificate['code'],
+            'nominal' => (float)$certificate['nominal'],
+            'nominal_formatted' => $this->formatAmount($certificate['nominal']) . ' ' . $currency,
+            'currency' => $currency,
+            'balance' => (float)$certificate['balance'],
+            'balance_formatted' => $this->formatAmount($certificate['balance']) . ' ' . $currency,
+            'expireson' => (string)$certificate['expireson'],
+            'expireson_formatted' => $this->formatCertificateDate(isset($certificate['expireson']) ? $certificate['expireson'] : ''),
+            'active' => (int)$certificate['active'],
+            'createdon' => (string)$certificate['createdon'],
+            'updatedon' => (string)$certificate['updatedon'],
+        ];
+    }
+
+    public function renderCertificateHtml($orderId, $tpl = 'msGiftCards.certificate', array $extra = [])
+    {
+        $certificate = $this->getCertificateDataByOrderId($orderId);
+        if (!$certificate) {
+            return '';
+        }
+
+        $placeholders = array_merge($certificate, $extra);
+        return $this->renderChunk($tpl, $placeholders);
+    }
+
+    public function getCertificatePdfHtml($orderId, $tpl = 'msGiftCards.certificate')
+    {
+        $html = $this->renderCertificateHtml($orderId, $tpl);
+        if ($html === '') {
+            return '';
+        }
+
+        return '<!doctype html><html><head><meta charset="UTF-8"><style>'
+            . '@page{margin:0;}'
+            . 'html,body{margin:0;padding:0;background:#ffffff;}'
+            . 'body{font-family:DejaVu Sans,Arial,sans-serif;color:#222;}'
+            . '*{box-sizing:border-box;}'
+            . '</style></head><body>' . $html . '</body></html>';
+    }
+
+    public function generateCertificatePdf($orderId, $tpl = 'msGiftCards.certificate')
+    {
+        $certificate = $this->getCertificateDataByOrderId($orderId);
+        if (!$certificate) {
+            return '';
+        }
+
+        $autoload = $this->config['corePath'] . 'vendor/autoload.php';
+        if (is_file($autoload)) {
+            require_once $autoload;
+        }
+
+        if (class_exists('Dompdf\\Dompdf')) {
+            $html = $this->getCertificatePdfHtml($orderId, $tpl);
+            if ($html !== '') {
+                $optionsClass = 'Dompdf\\Options';
+                $dompdfClass = 'Dompdf\\Dompdf';
+
+                $options = new $optionsClass();
+                if (method_exists($options, 'set')) {
+                    $options->set('isRemoteEnabled', false);
+                    $options->set('isHtml5ParserEnabled', true);
+                    $options->set('isPhpEnabled', false);
+                    $options->set('defaultFont', 'DejaVu Sans');
+                    $options->set('tempDir', MODX_CORE_PATH . 'cache/');
+                    $options->set('chroot', MODX_BASE_PATH);
+                }
+
+                $dompdf = new $dompdfClass($options);
+                $dompdf->loadHtml($html, 'UTF-8');
+                $paper = strtoupper(trim((string)$this->config['certificatePdfPaper']));
+                if (!in_array($paper, ['A4', 'A5', 'LETTER'], true)) {
+                    $paper = 'A4';
+                }
+
+                $orientation = strtolower(trim((string)$this->config['certificatePdfOrientation']));
+                if (!in_array($orientation, ['portrait', 'landscape'], true)) {
+                    $orientation = 'portrait';
+                }
+
+                $dompdf->setPaper($paper, $orientation);
+                $dompdf->render();
+
+                return $dompdf->output();
+            }
+        }
+
+        return msGiftCardsPdf::build($certificate);
+    }
+
+    public function generateCertificateToken($orderId)
+    {
+        $orderId = (int)$orderId;
+        if ($orderId <= 0) {
+            return '';
+        }
+
+        $key = hash('sha256', $this->getCertificateTokenKey(), true);
+        $iv = random_bytes(16);
+        $payload = json_encode([
+            'order_id' => $orderId,
+            'iat' => time(),
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        if ($payload === false) {
+            return '';
+        }
+
+        if (!function_exists('openssl_encrypt')) {
+            $signature = hash_hmac('sha256', $payload, $key, true);
+            return $this->base64UrlEncode($signature . $payload);
+        }
+
+        $ciphertext = openssl_encrypt($payload, 'AES-256-CBC', $key, OPENSSL_RAW_DATA, $iv);
+        if ($ciphertext === false) {
+            return '';
+        }
+
+        $signature = hash_hmac('sha256', $iv . $ciphertext, $key, true);
+        return $this->base64UrlEncode($iv . $signature . $ciphertext);
+    }
+
+    public function parseCertificateToken($token)
+    {
+        $token = trim((string)$token);
+        if ($token === '') {
+            return [false, null];
+        }
+
+        $binary = $this->base64UrlDecode($token);
+        if ($binary === '') {
+            return [false, null];
+        }
+
+        $key = hash('sha256', $this->getCertificateTokenKey(), true);
+        $payload = '';
+
+        if (function_exists('openssl_decrypt') && strlen($binary) > 48) {
+            $iv = substr($binary, 0, 16);
+            $signature = substr($binary, 16, 32);
+            $ciphertext = substr($binary, 48);
+            $expected = hash_hmac('sha256', $iv . $ciphertext, $key, true);
+            if (!hash_equals($expected, $signature)) {
+                return [false, null];
+            }
+
+            $payload = openssl_decrypt($ciphertext, 'AES-256-CBC', $key, OPENSSL_RAW_DATA, $iv);
+            if ($payload === false) {
+                return [false, null];
+            }
+        } elseif (strlen($binary) > 32) {
+            $signature = substr($binary, 0, 32);
+            $payload = substr($binary, 32);
+            $expected = hash_hmac('sha256', $payload, $key, true);
+            if (!hash_equals($expected, $signature)) {
+                return [false, null];
+            }
+        } else {
+            return [false, null];
+        }
+
+        $data = json_decode($payload, true);
+        if (!is_array($data) || empty($data['order_id'])) {
+            return [false, null];
+        }
+
+        return [true, (int)$data['order_id']];
     }
 
     public function validateCertificateCode($code)
@@ -870,6 +1140,23 @@ class msGiftCards
         }
 
         return $result;
+    }
+
+    protected function base64UrlEncode($value)
+    {
+        return rtrim(strtr(base64_encode((string)$value), '+/', '-_'), '=');
+    }
+
+    protected function base64UrlDecode($value)
+    {
+        $value = strtr((string)$value, '-_', '+/');
+        $padding = strlen($value) % 4;
+        if ($padding > 0) {
+            $value .= str_repeat('=', 4 - $padding);
+        }
+
+        $decoded = base64_decode($value, true);
+        return $decoded === false ? '' : $decoded;
     }
 }
 
