@@ -10,7 +10,7 @@ $_lang['msgiftcards_err_code_empty_balance'] = 'Баланс этого серт
 $_lang['msgiftcards_label_code'] = 'Подарочный сертификат';
 $_lang['msgiftcards_placeholder_code'] = 'Введите код';
 $_lang['msgiftcards_btn_apply'] = 'Применить';
-$_lang['msgiftcards_btn_remove'] = 'Удалить';
+$_lang['msgiftcards_btn_remove'] = 'Отменить';
 $_lang['msgiftcards_info_title'] = 'Сертификат применен';
 $_lang['msgiftcards_info_code'] = 'Код';
 $_lang['msgiftcards_info_nominal'] = 'Номинал';
@@ -18,7 +18,7 @@ $_lang['msgiftcards_info_current_balance'] = 'Баланс';
 $_lang['msgiftcards_info_writeoff'] = 'Спишется сейчас';
 $_lang['msgiftcards_info_balance'] = 'Останется';
 $_lang['msgiftcards_message_applied'] = 'Сертификат применен. Номинал: [[+nominal]] [[+currency]], баланс: [[+balance]] [[+currency]], спишется сейчас: [[+writeoff]] [[+currency]], останется: [[+balance_after]] [[+currency]]';
-$_lang['msgiftcards_message_removed'] = 'Сертификат удален';
+$_lang['msgiftcards_message_removed'] = 'Сертификат отменен';
 $_lang['msgiftcards_message_error_generic'] = 'Ошибка';
 $_lang['msgiftcards_message_network_error'] = 'Ошибка сети';
 
@@ -64,6 +64,7 @@ $_lang['msgiftcards_mgr_copy'] = 'Скопировать код';
 $_lang['msgiftcards_mgr_copied'] = 'Код сертификата скопирован в буфер обмена.';
 $_lang['msgiftcards_mgr_view_unavailable'] = 'Для этой записи недоступен просмотр PDF сертификата.';
 $_lang['msgiftcards_mgr_code_desc'] = 'Если оставить пустым, код сгенерируется автоматически по маске из настроек.';
+
 $_lang['msgiftcards_certificate_title'] = 'Подарочный сертификат';
 $_lang['msgiftcards_certificate_expires_label'] = 'Срок действия до';
 $_lang['msgiftcards_certificate_description'] = 'Подарочный сертификат для оплаты заказа в интернет-магазине.';

@@ -21,7 +21,18 @@ if ($action !== xPDOTransport::ACTION_INSTALL && $action !== xPDOTransport::ACTI
 
 $setting = $xpdo->getObject('modSystemSetting', ['key' => 'msgiftcards_certificate_token_key']);
 if (!$setting) {
-    return true;
+    $setting = $xpdo->newObject('modSystemSetting');
+    if (!$setting) {
+        return false;
+    }
+
+    $setting->fromArray([
+        'key' => 'msgiftcards_certificate_token_key',
+        'namespace' => 'msgiftcards',
+        'area' => 'security',
+        'xtype' => 'textfield',
+        'value' => '',
+    ], '', true, true);
 }
 
 $value = trim((string)$setting->get('value'));

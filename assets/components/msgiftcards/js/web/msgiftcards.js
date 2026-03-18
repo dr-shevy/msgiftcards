@@ -80,6 +80,15 @@
       }
     }
 
+    function updateButtons(isApplied) {
+      if (applyBtn) {
+        applyBtn.classList.toggle('d-none', !!isApplied);
+      }
+      if (removeBtn) {
+        removeBtn.classList.toggle('d-none', !isApplied);
+      }
+    }
+
     function renderInfoFromResponse(data) {
       if (!data || !data.code) {
         setInfo('');
@@ -125,10 +134,12 @@
         }
         var data = getPayload(res);
         if (!data.applied) {
+          updateButtons(false);
           setInfo('');
           setMessage('', false);
           return data;
         }
+        updateButtons(true);
         renderInfoFromResponse(data);
         setMessage(buildAppliedMessage(data), false);
         return data;
@@ -208,6 +219,7 @@
         if (input) {
           input.value = '';
         }
+        updateButtons(false);
         setMessage('', false);
         setInfo('');
       });
@@ -224,6 +236,7 @@
             return;
           }
           var data = getPayload(res);
+          updateButtons(true);
           renderInfoFromResponse(data);
           setMessage(buildAppliedMessage(data), false);
           refreshCheckoutCostSafe();
@@ -245,6 +258,7 @@
             setMessage((res && res.message) || (cfg.messageErrorGeneric || ''), true);
             return;
           }
+          updateButtons(false);
           setMessage(cfg.messageRemoved || '', false);
           setInfo('');
           refreshCheckoutCostSafe();
@@ -263,6 +277,7 @@
         if (input) {
           input.value = '';
         }
+        updateButtons(false);
         setMessage('', false);
         setInfo('');
         post('giftcard/remove');
@@ -309,6 +324,7 @@
     });
 
     bindMiniShop2Callbacks();
+    updateButtons(hasAppliedCertificate());
     setTimeout(syncCurrentInfo, 100);
   }
 

@@ -2,7 +2,7 @@
 
 define('PKG_NAME', 'msGiftCards');
 define('PKG_NAME_LOWER', 'msgiftcards');
-define('PKG_VERSION', '1.1.0');
+define('PKG_VERSION', '1.2.0');
 define('PKG_RELEASE', 'pl');
 
 define('MODX_BASE_PATH', dirname(__DIR__) . '/');

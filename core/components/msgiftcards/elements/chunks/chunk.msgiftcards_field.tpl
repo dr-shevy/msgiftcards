@@ -11,7 +11,7 @@
         class="form-control"
       />
       <button type="button" class="btn btn-outline-primary" data-ms2giftcards-apply>[[+btn_apply]]</button>
-      <button type="button" class="btn btn-outline-secondary" data-ms2giftcards-remove>[[+btn_remove]]</button>
+      <button type="button" class="btn btn-outline-secondary d-none" data-ms2giftcards-remove>[[+btn_remove]]</button>
     </div>
     <div class="small mt-2" data-ms2giftcards-message></div>
     <div class="mt-2" data-ms2giftcards-info-block>[[+info]]</div>

@@ -70,3 +70,4 @@ $_lang['msgiftcards_certificate_description'] = 'Gift certificate for paying for
 $_lang['msgiftcards_certificate_code_label'] = 'Certificate code';
 $_lang['msgiftcards_certificate_help'] = 'Enter the certificate code during checkout. If the order total is lower than the nominal value, the remaining balance stays on the certificate.';
 $_lang['msgiftcards_certificate_no_expiration'] = 'No expiration';
+$_lang['msgiftcards_btn_remove'] = 'Cancel';

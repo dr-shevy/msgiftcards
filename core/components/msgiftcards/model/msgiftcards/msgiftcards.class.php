@@ -372,7 +372,7 @@ class msGiftCards
 
                 $options = new $optionsClass();
                 if (method_exists($options, 'set')) {
-                    $options->set('isRemoteEnabled', false);
+                    $options->set('isRemoteEnabled', true);
                     $options->set('isHtml5ParserEnabled', true);
                     $options->set('isPhpEnabled', false);
                     $options->set('defaultFont', 'DejaVu Sans');
@@ -1159,4 +1159,5 @@ class msGiftCards
         return $decoded === false ? '' : $decoded;
     }
 }
+
 

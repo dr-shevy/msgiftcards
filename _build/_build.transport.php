@@ -33,6 +33,9 @@ $builder->setPackageAttributes([
     'license' => file_exists($sources['docs'] . 'license.txt') ? file_get_contents($sources['docs'] . 'license.txt') : '',
     'readme' => file_exists($sources['docs'] . 'readme.txt') ? file_get_contents($sources['docs'] . 'readme.txt') : '',
     'changelog' => file_exists($sources['docs'] . 'changelog.txt') ? file_get_contents($sources['docs'] . 'changelog.txt') : '',
+    'setup-options' => [
+        'source' => $sources['build'] . 'options.resolve.php',
+    ],
 ]);
 
 $category = $modx->newObject('modCategory');
@@ -344,7 +347,7 @@ $attr = [
         'Chunks' => [
             xPDOTransport::UNIQUE_KEY => 'name',
             xPDOTransport::PRESERVE_KEYS => false,
-            xPDOTransport::UPDATE_OBJECT => true,
+            xPDOTransport::UPDATE_OBJECT => false,
         ],
     ],
 ];
@@ -365,9 +368,6 @@ $vehicle->resolve('php', [
 $vehicle->resolve('php', [
     'source' => $sources['resolvers'] . 'resolve.payment.php',
 ]);
-$vehicle->resolve('php', [
-    'source' => $sources['resolvers'] . 'resolve.secret.php',
-]);
 $builder->putVehicle($vehicle);
 
 $settings = [
@@ -382,7 +382,7 @@ $settings = [
         'area' => 'main',
     ],
     'msgiftcards_default_currency' => [
-        'value' => '₽',
+        'value' => 'Р В Р вЂ Р Р†Р вЂљРЎв„ўР В РІР‚В¦',
         'xtype' => 'textfield',
         'area' => 'main',
     ],
@@ -469,6 +469,12 @@ $vehicle = $builder->createVehicle([
     'source' => $sources['source_assets'],
     'target' => "return MODX_ASSETS_PATH . 'components/';",
 ], $fileVehicleAttr);
+$vehicle->resolve('php', [
+    'source' => $sources['resolvers'] . 'resolve.secret.php',
+]);
+$vehicle->resolve('php', [
+    'source' => $sources['resolvers'] . 'resolve.chunks.php',
+]);
 $builder->putVehicle($vehicle);
 
 $builder->pack();
