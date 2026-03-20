@@ -1,6 +1,7 @@
-<?php
+﻿<?php
 return [
     'name' => 'msGiftCards',
     'description' => 'Gift certificates for miniShop2',
-    'version' => '1.2.0-pl',
+    'version' => '1.2.1-pl',
 ];
+

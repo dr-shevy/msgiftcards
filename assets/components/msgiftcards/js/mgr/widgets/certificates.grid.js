@@ -1,4 +1,4 @@
-msGiftCards.grid.Certificates = function(config) {
+﻿msGiftCards.grid.Certificates = function(config) {
   config = config || {};
   Ext.applyIf(config, {
     id: 'msgiftcards-grid-certificates',
@@ -67,12 +67,18 @@ msGiftCards.grid.Certificates = function(config) {
       header: _('msgiftcards_mgr_expireson'),
       dataIndex: 'expireson',
       width: 130,
-      sortable: true
+      sortable: true,
+      renderer: function(v) {
+        return msGiftCards.utils.formatDateTime(v);
+      }
     }, {
       header: _('msgiftcards_mgr_createdon'),
       dataIndex: 'createdon',
       width: 130,
-      sortable: true
+      sortable: true,
+      renderer: function(v) {
+        return msGiftCards.utils.formatDateTime(v);
+      }
     }, {
       header: _('msgiftcards_mgr_actions'),
       dataIndex: 'id',
@@ -258,6 +264,12 @@ Ext.extend(msGiftCards.grid.Certificates, MODx.grid.Grid, {
       });
     }
     this.updateWindow.reset();
+    if (r.expireson) {
+      r.expireson = Date.parseDate(String(r.expireson), 'Y-m-d H:i:s')
+        || Date.parseDate(String(r.expireson), 'Y-m-d H:i')
+        || Date.parseDate(String(r.expireson), 'Y-m-d')
+        || r.expireson;
+    }
     this.updateWindow.setValues(r);
     if (this.updateWindow.setCertificateId) {
       this.updateWindow.setCertificateId(r.id);
@@ -391,7 +403,10 @@ msGiftCards.grid.RedemptionsAll = function(config) {
       header: _('msgiftcards_mgr_redemption_date'),
       dataIndex: 'createdon',
       width: 180,
-      sortable: true
+      sortable: true,
+      renderer: function(v) {
+        return msGiftCards.utils.formatDateTime(v);
+      }
     }],
     tbar: [{
       xtype: 'msgiftcards-field-search',
@@ -456,8 +471,8 @@ Ext.extend(msGiftCards.grid.RedemptionsAll, MODx.grid.Grid, {
 
     this.getStore().baseParams.order_id = orderField ? orderField.getValue() : '';
     this.getStore().baseParams.code = codeField ? codeField.getValue() : '';
-    this.getStore().baseParams.date_from = (dateFrom && dateFrom.format) ? dateFrom.format('Y-m-d') : (dateFrom || '');
-    this.getStore().baseParams.date_to = (dateTo && dateTo.format) ? dateTo.format('Y-m-d') : (dateTo || '');
+    this.getStore().baseParams.date_from = msGiftCards.utils.toIsoDate(dateFrom);
+    this.getStore().baseParams.date_to = msGiftCards.utils.toIsoDate(dateTo);
     this.getBottomToolbar().changePage(1);
   },
 
@@ -481,3 +496,9 @@ Ext.extend(msGiftCards.grid.RedemptionsAll, MODx.grid.Grid, {
   }
 });
 Ext.reg('msgiftcards-grid-redemptions-all', msGiftCards.grid.RedemptionsAll);
+
+
+
+
+
+

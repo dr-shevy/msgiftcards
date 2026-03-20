@@ -1,4 +1,4 @@
-msGiftCards.grid.Redemptions = function(config) {
+﻿msGiftCards.grid.Redemptions = function(config) {
   config = config || {};
   Ext.applyIf(config, {
     id: config.id || 'msgiftcards-grid-redemptions',
@@ -42,7 +42,10 @@ msGiftCards.grid.Redemptions = function(config) {
       header: _('msgiftcards_mgr_redemption_date'),
       dataIndex: 'createdon',
       width: 180,
-      sortable: true
+      sortable: true,
+      renderer: function(v) {
+        return msGiftCards.utils.formatDateTime(v);
+      }
     }],
     paging: true,
     remoteSort: true,
@@ -242,6 +245,9 @@ msGiftCards.window.certificateMainTabFields = function() {
       xtype: 'xdatetime',
       fieldLabel: _('msgiftcards_mgr_expireson'),
       name: 'expireson',
+      dateFormat: msGiftCards.config.managerDateFormat || 'Y-m-d',
+      timeFormat: msGiftCards.config.managerTimeFormat || 'H:i',
+      hiddenFormat: 'Y-m-d H:i:s',
       anchor: '98%'
     }, {
       xtype: 'combo-boolean',
@@ -253,3 +259,5 @@ msGiftCards.window.certificateMainTabFields = function() {
     }]
   }];
 };
+
+

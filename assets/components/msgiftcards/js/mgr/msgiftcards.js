@@ -1,4 +1,4 @@
-Ext.namespace('msGiftCards');
+﻿Ext.namespace('msGiftCards');
 Ext.namespace('msGiftCards.page');
 Ext.namespace('msGiftCards.panel');
 Ext.namespace('msGiftCards.grid');
@@ -8,7 +8,48 @@ Ext.namespace('msGiftCards.combo');
 msGiftCards.config = {
   connectorUrl: MODx.config.assets_url + 'components/msgiftcards/connector.php'
 };
+msGiftCards.config.managerDateFormat = (MODx.config && MODx.config.manager_date_format) ? MODx.config.manager_date_format : 'Y-m-d';
+msGiftCards.config.managerTimeFormat = (MODx.config && MODx.config.manager_time_format) ? MODx.config.manager_time_format : 'H:i';
 
+msGiftCards.utils = msGiftCards.utils || {};
+msGiftCards.utils.getManagerDateTimeFormat = function() {
+  return msGiftCards.config.managerDateFormat + ' ' + msGiftCards.config.managerTimeFormat;
+};
+msGiftCards.utils.formatDateTime = function(value) {
+  if (!value || value === '0000-00-00 00:00:00') {
+    return '';
+  }
+
+  var date = value;
+  if (!(date instanceof Date)) {
+    date = Date.parseDate(String(value), 'Y-m-d H:i:s')
+      || Date.parseDate(String(value), 'Y-m-d H:i')
+      || Date.parseDate(String(value), 'Y-m-d');
+  }
+
+  if (!date) {
+    return value;
+  }
+
+  return date.format(msGiftCards.utils.getManagerDateTimeFormat());
+};
+
+msGiftCards.utils.parseManagerDate = function(value) {
+  if (!value) {
+    return null;
+  }
+
+  if (value instanceof Date) {
+    return value;
+  }
+
+  return Date.parseDate(String(value), msGiftCards.config.managerDateFormat)
+    || Date.parseDate(String(value), 'Y-m-d');
+};
+msGiftCards.utils.toIsoDate = function(value) {
+  var date = msGiftCards.utils.parseManagerDate(value);
+  return date ? date.format('Y-m-d') : '';
+};
 msGiftCards.combo.Search = function(config) {
   config = config || {};
   Ext.applyIf(config, {
@@ -90,14 +131,14 @@ Ext.extend(msGiftCards.combo.DateFilter, Ext.form.TwinTriggerField, {
       this.menu = new Ext.menu.DateMenu({
         hideOnClick: true,
         handler: function(dp, date) {
-          this.setValue(date.format('Y-m-d'));
+          this.setValue(date.format(msGiftCards.config.managerDateFormat || 'Y-m-d'));
           this.fireEvent('search', this);
         },
         scope: this
       });
     }
 
-    var parsed = Date.parseDate(this.getValue(), 'Y-m-d');
+    var parsed = msGiftCards.utils.parseManagerDate(this.getValue());
     if (parsed) {
       this.menu.picker.setValue(parsed);
     }
@@ -113,3 +154,5 @@ Ext.extend(msGiftCards.combo.DateFilter, Ext.form.TwinTriggerField, {
 });
 Ext.reg('msgiftcards-combo-datefilter', msGiftCards.combo.DateFilter);
 Ext.reg('msgiftcards-field-datefilter', msGiftCards.combo.DateFilter);
+
+

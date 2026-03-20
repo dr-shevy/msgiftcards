@@ -7,10 +7,9 @@ if (!file_exists($root . '/config.core.php')) {
 }
 
 require_once $root . '/config.core.php';
-require_once MODX_CORE_PATH . 'config/' . MODX_CONFIG_KEY . '.inc.php';
-require_once MODX_CONNECTORS_PATH . 'index.php';
+require_once MODX_CORE_PATH . 'model/modx/modx.class.php';
 
-/** @var modX $modx */
+$modx = new modX();
 $modx->initialize('web');
 
 $corePath = $modx->getOption('msgiftcards_core_path', null, $modx->getOption('core_path') . 'components/msgiftcards/');

@@ -1,8 +1,8 @@
-<?php
+﻿<?php
 
 define('PKG_NAME', 'msGiftCards');
 define('PKG_NAME_LOWER', 'msgiftcards');
-define('PKG_VERSION', '1.2.0');
+define('PKG_VERSION', '1.2.1');
 define('PKG_RELEASE', 'pl');
 
 define('MODX_BASE_PATH', dirname(__DIR__) . '/');
@@ -23,4 +23,5 @@ $sources = [
 
 $modx = null;
 $builder = null;
+
 
