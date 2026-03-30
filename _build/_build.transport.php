@@ -382,7 +382,13 @@ $settings = [
         'area' => 'main',
     ],
     'msgiftcards_default_currency' => [
-        'value' => 'Р В Р вЂ Р Р†Р вЂљРЎв„ўР В РІР‚В¦',
+        'value' => '₽',
+        'xtype' => 'textfield',
+        'area' => 'main',
+    ],
+
+    'msgiftcards_frontend_css' => [
+        'value' => '{assets_url}components/msgiftcards/css/web/default.css',
         'xtype' => 'textfield',
         'area' => 'main',
     ],

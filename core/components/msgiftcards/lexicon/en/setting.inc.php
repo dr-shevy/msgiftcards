@@ -36,3 +36,6 @@ $_lang['setting_msgiftcards_certificate_pdf_paper'] = 'Certificate PDF paper siz
 $_lang['setting_msgiftcards_certificate_pdf_paper_desc'] = 'Paper size for generated certificate PDF. Recommended values: A4, A5, Letter.';
 $_lang['setting_msgiftcards_certificate_pdf_orientation'] = 'Certificate PDF orientation';
 $_lang['setting_msgiftcards_certificate_pdf_orientation_desc'] = 'Page orientation for generated certificate PDF. Allowed values: portrait or landscape.';
+
+$_lang['setting_msgiftcards_frontend_css'] = 'Frontend CSS path';
+$_lang['setting_msgiftcards_frontend_css_desc'] = 'URL or path to CSS for the gift certificate apply field and message states (success/error). Default: {assets_url}components/msgiftcards/css/web/default.css.';

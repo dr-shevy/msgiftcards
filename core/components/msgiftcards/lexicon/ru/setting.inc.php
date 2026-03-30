@@ -36,3 +36,6 @@ $_lang['setting_msgiftcards_certificate_pdf_paper'] = 'Формат листа P
 $_lang['setting_msgiftcards_certificate_pdf_paper_desc'] = 'Формат листа для PDF сертификата. Рекомендуемые значения: A4, A5, Letter.';
 $_lang['setting_msgiftcards_certificate_pdf_orientation'] = 'Ориентация PDF сертификата';
 $_lang['setting_msgiftcards_certificate_pdf_orientation_desc'] = 'Ориентация страницы PDF сертификата. Допустимые значения: portrait или landscape.';
+
+$_lang['setting_msgiftcards_frontend_css'] = 'Путь к CSS фронтенда';
+$_lang['setting_msgiftcards_frontend_css_desc'] = 'URL или путь к CSS-файлу стилей поля применения сертификата и сообщений (успех/ошибка). По умолчанию: {assets_url}components/msgiftcards/css/web/default.css.';

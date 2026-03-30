@@ -62,7 +62,6 @@ switch ($modx->event->name) {
         ]);
         $modx->event->returnedValues['data'] = $data;
         break;
-
     case 'msOnGetOrderCost':
         if (isset($with_cart) && !$with_cart) {
             // miniShop2 calls getCost(false, true) to calculate delivery part.
@@ -84,26 +83,23 @@ switch ($modx->event->name) {
 
         $balance = max(0.0, (float)$certificate['balance']);
         $currentCost = max(0.0, (float)$cost);
-        $msBonus2Writeoff = $msGiftCards->getMsBonus2Writeoff();
+        $msBonus2Writeoff = max(0.0, (float)$msGiftCards->getMsBonus2Writeoff());
 
-        // msBonus2 1.3.x does not change miniShop2 order cost on msOnGetOrderCost.
-        // It stores writeoff in session and subtracts it on the frontend only.
-        // Apply the certificate to the actual remaining payable amount.
-        if ($msBonus2Writeoff > 0) {
-            $currentCost = max(0.0, $currentCost - $msBonus2Writeoff);
-        }
+        // Remaining amount payable after msBonus2 writeoff.
+        $payableAfterBonus = max(0.0, $currentCost - $msBonus2Writeoff);
 
-        // IMPORTANT: apply certificate to already calculated order cost.
-        // This makes it compatible with other discounts (e.g. msBonus2).
-        $orderBaseCost = $currentCost;
-        $discount = min($balance, $orderBaseCost);
-        $newCost = max(0.0, $orderBaseCost - $discount);
+        // Certificate must not write off more than payable amount after bonuses.
+        $discount = min($balance, $payableAfterBonus);
+
+        // Important: subtract only certificate from current cost.
+        // msBonus2 will apply its own writeoff in its own flow.
+        $newCost = max(0.0, $currentCost - $discount);
 
         $msGiftCards->setCheckoutState([
             'code' => (string)$certificate['code'],
             'certificate_id' => (int)$certificate['id'],
             'discount' => $discount,
-            'order_discount_base' => $orderBaseCost,
+            'order_discount_base' => $payableAfterBonus,
             'msbonus2_writeoff' => $msBonus2Writeoff,
         ]);
 
@@ -115,27 +111,31 @@ switch ($modx->event->name) {
         $modx->event->returnedValues['msgiftcards_discount'] = $discount;
         $modx->event->returnedValues['msgiftcards_code'] = (string)$certificate['code'];
         break;
-
     case 'msOnGetStatusCart':
         if (!isset($status) || !is_array($status)) {
             break;
         }
 
         $originalCartCost = $msGiftCards->getCartBaseTotalCost($status);
-        $applied = $msGiftCards->applyDiscountToCost($originalCartCost);
+        $msBonus2Writeoff = max(0.0, (float)$msGiftCards->getMsBonus2Writeoff());
+
+        // Certificate applies to payable amount after bonus writeoff.
+        $cartCostAfterBonus = max(0.0, (float)$originalCartCost - $msBonus2Writeoff);
+
+        $applied = $msGiftCards->applyDiscountToCost($cartCostAfterBonus);
         if (!empty($applied['message'])) {
             $modx->log(modX::LOG_LEVEL_INFO, '[msGiftCards] ' . $applied['message']);
         }
 
-        // Do not override cart total_cost here.
-        // This keeps mini-cart `.ms2_total_cost` unchanged by gift certificates.
-        // Final writeoff is applied on order totals in msOnGetOrderCost.
+        // Keep original totals for UI and diagnostics.
+        // Do not override mini-cart `.ms2_total_cost` directly.
         $status['msgiftcards_original_total_cost'] = $originalCartCost;
+        $status['msgiftcards_cost_after_bonus'] = $cartCostAfterBonus;
+        $status['msgiftcards_msbonus2_writeoff'] = $msBonus2Writeoff;
         $status['msgiftcards_discount'] = $applied['discount'];
         $status['msgiftcards_code'] = !empty($applied['certificate']['code']) ? $applied['certificate']['code'] : '';
         $modx->event->returnedValues['status'] = $status;
         break;
-
     case 'msOnBeforeCreateOrder':
         $state = $msGiftCards->getCheckoutState();
         if (empty($state['code'])) {
@@ -245,4 +245,5 @@ switch ($modx->event->name) {
         $msGiftCards->clearCheckoutState();
         break;
 }
+
 

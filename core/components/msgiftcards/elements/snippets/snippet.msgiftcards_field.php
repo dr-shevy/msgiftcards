@@ -16,6 +16,11 @@ $infoSnippet = isset($infoSnippet) && trim((string)$infoSnippet) !== '' ? trim((
 $tplInfo = isset($tplInfo) && trim((string)$tplInfo) !== '' ? trim((string)$tplInfo) : 'msGiftCards.info';
 
 $assetsUrl = $msGiftCards->config['assetsUrl'];
+$defaultCssUrl = $assetsUrl . 'css/web/default.css';
+$frontendCss = trim((string)$modx->getOption('msgiftcards_frontend_css', null, $defaultCssUrl));
+if ($frontendCss !== '') {
+    $modx->regClientCSS($frontendCss);
+}
 $modx->regClientStartupScript($assetsUrl . 'js/web/msgiftcards.js');
 $modx->regClientStartupHTMLBlock('<script>window.msGiftCardsConfig=' . json_encode([
     'connectorUrl' => $msGiftCards->config['connectorUrl'],

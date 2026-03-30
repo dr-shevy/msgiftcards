@@ -24,7 +24,10 @@
     function setMessage(text, isError) {
       if (!message) return;
       message.textContent = text || '';
-      message.style.color = isError ? '#b00020' : '#1b7f3b';
+      message.classList.remove('ms2giftcards-success', 'ms2giftcards-error');
+      if (text) {
+        message.classList.add(isError ? 'ms2giftcards-error' : 'ms2giftcards-success');
+      }
     }
 
     function isSuccess(res) {
